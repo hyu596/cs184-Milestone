@@ -1,0 +1,187 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<style>
+  body {
+    padding: 100px;
+    width: 1000px;
+    margin: auto;
+    text-align: left;
+    font-weight: 300;
+    font-family: 'Open Sans', sans-serif;
+    color: #121212;
+  }
+  h1, h2, h3, h4 {
+    font-family: 'Source Sans Pro', sans-serif;
+  }
+</style>
+<title>CS 184 Ray Tracer, Part 1</title>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link href="https://fonts.googleapis.com/css?family=Open+Sans|Source+Sans+Pro" rel="stylesheet">
+</head>
+
+<body>
+
+<h1 align="middle">CS 184: Final Project Milestone Status Report</h1>
+
+<br>
+
+<div>
+
+    <p><b>Project Title</b>: 	Displacement Maps using Dynamic Tessellation</p>
+
+    <p><b>Team Members</b>: Jeff Yu (cs184-ady), Bing Bo (cs184-afd)</p>
+    
+    <h2 align="middle">Short Summary</h2>
+    
+    <p>Having been working on our final project for two weeks, we did suffer quite a lot from it but everything seems working on schedule. To be honest, we were really behind at one point, but we tried our best to catch up. So far, we have already implemented <b>Catmull-Clark Subdivision</b> and <b>Adaptive Subdivision</b> ( I would call ours 'Weak' Adaptive Subdivision; reason in details would come below). Getting started was the hardest period, since most the project files were given to us at first and, therefore, recapping those old memories took us awhile. But we have reached the halfway mark of it, and there is no sense in turning back now :)</p>
+    
+    <h2 align="middle">Catmull-Clark Subdivision</h2>
+    
+    <p>Firstly, we implemented <b>Catmull-Clark Subdivision</b> so that we are able to apply subdivision on all the polygon meshes. The Vertex Update Rules can be found <a href="https://cs184.org/lecture/geometry-processing/slide_018">in the class slides</a>. We firstly iterate through all the faces and edges to find the corresponding face points and edges points. Then we are to divide each polygons into four, which is much harder than it sounds. The issue occurring to us was that, if one face is considered to be applied subdivision on, we are unable to detect whether its neighboring faces have already been partitioned in which case the edges of the face we are working on would have been divided into two respectively already. Therefore, we decided to divide all the edges into half in advance in the subdividing phase. Then add all the new faces, edges, half-edges, and vertices if needed, and carefully assign their new attributes.</p>
+    
+    <p>Here are some screenshots on quad-based torus.dae:</p>
+    
+    <div align="middle">
+        <table style="width=100%">
+            <tr>
+                <td>
+                    <img src="image/1.png" align="middle" width="500px" height="400px"/>
+                </td>
+            </tr>
+        </table>
+    </div>
+    
+    <div align="middle">
+        <table style="width=100%">
+            <tr>
+                <td>
+                    <img src="image/2.png" align="middle" width="500px" height="400px"/>
+                </td>
+            </tr>
+        </table>
+    </div>
+    
+    <div align="middle">
+        <table style="width=100%">
+            <tr>
+                <td>
+                    <img src="image/3.png" align="middle" width="500px" height="400px"/>
+                </td>
+            </tr>
+        </table>
+    </div>
+    
+    <p>Moreover, it's also working on the triangular-based meshes:</p>
+    
+    <div align="middle">
+        <table style="width=100%">
+            <tr>
+                <td>
+                    <img src="image/4.png" align="middle" width="500px" height="400px"/>
+                </td>
+            </tr>
+        </table>
+    </div>
+    
+    <div align="middle">
+        <table style="width=100%">
+            <tr>
+                <td>
+                    <img src="image/5.png" align="middle" width="500px" height="400px"/>
+                </td>
+            </tr>
+        </table>
+    </div>
+    
+    <div align="middle">
+        <table style="width=100%">
+            <tr>
+                <td>
+                    <img src="image/6.png" align="middle" width="500px" height="400px"/>
+                </td>
+            </tr>
+        </table>
+    </div> 
+    
+    <h2 align="middle">'Weak' Adaptive Subdivision</h2>
+    
+    <p>As written in the proposal, Adaptive Subdivision is used to avoid over-tessellated and under-tessellated cases. To be more specific, we need to find such a metric that determines if our meshes need more subdivision. Usually, each meshes is treated respectively; if a mesh has been smooth enough, then we don't apply subdivision on it anymore, but that does not mean other meshes have been smooth enough too. In our implementation, we chose to achieve the same spirit in a different but similar way: if there exists one mesh that is not smooth enough, we apply subdivisions on all the meshes. Implementing in this way reduces a lot of workload compared with the classical Adaptive Subdivision, and it does optimize our rendering efficiency-wise.</p>
+    
+	<p>The way to detect whether all the surfaces have been smooth is that, before dividing a face into four, we check how parallel these four sub-faces are with the original face. Only if all four sub-faces are parallel enough with the original face, we don't subdivide this face anymore. And the parallelity between two planes can be calculated based on the normals. Moreover, if none of the adjacent faces of one edge needs more subdivision, we don't divide it into half anymore. Vertices can be treated in the same way.</p>
+	
+	<p>Adaptive subdivision "disabled" our 'U' button if all the meshes have been smooth enough (recall that 'U' button is subdivision). For example:</p>  
+	
+    <div align="middle">
+        <table style="width=100%">
+            <tr>
+                <td>
+                    <img src="image/7.png" align="middle" width="500px" height="400px"/>
+                    <figcaption align="middle">Original</figcaption>
+                </td>
+            </tr>
+        </table>
+    </div> 
+    
+    <div align="middle">
+        <table style="width=100%">
+            <tr>
+                <td>
+                    <img src="image/8.png" align="middle" width="500px" height="400px"/>
+                    <figcaption align="middle">Press 'U' without Adaptive Subdivision</figcaption>
+                </td>
+            </tr>
+        </table>
+    </div> 
+    
+    <div align="middle">
+        <table style="width=100%">
+            <tr>
+                <td>
+                    <img src="image/7.png" align="middle" width="500px" height="400px"/>
+                    <figcaption align="middle">Press 'U' with Adaptive Subdivision</figcaption>
+                </td>
+            </tr>
+        </table>
+    </div> 
+    
+    <p>It might be unclear to show it in the format of images, but the sense is that, if all the meshes are smooth enough, we do not apply subdivision on it anymore!</p> 
+    
+    <h2 align="middle">Milestone Video</h2>
+        
+    <video width="960" height="720" controls>
+	<source src="cs184_milestone.mp4" type="video/mp4">
+	</video>
+	
+	<h2 align="middle">Presentation slides</h2>
+	
+	<div align="middle">
+	<a href="cs184 slides.pptx">CLICK ME</a>
+	</div>
+    
+	<h2 align="middle">Updated Schedule</h2>
+	
+	<p>Even though it seems we are on schedule, we still have few issues regarding to the previous parts. Our new schedule would be:</p>
+	
+	<table border="1" align="center">
+	<tr>
+	<td>By April 27th</td>
+	<td>Fix issues</td>
+	</tr>
+	<tr>
+	<td>By May 1st</td>
+	<td>Displacement Mapping</td>
+	</tr>
+	<tr>
+	<td>After May 1st</td>
+	<td>Prepare for presentation and final write-up</td>
+	</tr>
+	</table> 
+	
+	<br>
+	<p>Please let us know if there is any misunderstanding throughout this write-up :)</p>
+	<p>Thank you!</p>
+	   
+</div>
+</body>
+</html>
